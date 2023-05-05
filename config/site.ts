@@ -4,6 +4,6 @@ export const siteConfig = {
   name: "Grapic",
   description: "Content creation with AI",
   links: {
-    github: "https://github.com/deniandeawan/grapic",
+    github: "https://github.com/deniandreawan/grapic",
   },
 }
