@@ -1,4 +1,6 @@
 import {
+  ChevronLeft,
+  Loader2,
   LucideProps,
   Moon,
   SunMedium,
@@ -14,6 +16,8 @@ export const Icons = {
   moon: Moon,
   twitter: Twitter,
   uploadCloud: UploadCloud,
+  chevronLeft: ChevronLeft,
+  spinner: Loader2,
   logo: (props: LucideProps) => (
     <svg
       width="200"
