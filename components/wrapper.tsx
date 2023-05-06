@@ -1,16 +1,12 @@
-import { ReactNode } from "react"
+import * as React from "react"
 
-export function Wrapper({
-  className,
-  children,
-}: {
-  className?: string
-  children: ReactNode
-}) {
+import { cn } from "@/lib/utils"
+
+interface WrapperProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Wrapper({ children, className, ...props }: WrapperProps) {
   return (
-    <div
-      className={`mx-auto w-full max-w-screen-xl px-6 md:px-20 ${className}`}
-    >
+    <div className={cn("grid items-start gap-8 pb-8", className)} {...props}>
       {children}
     </div>
   )

@@ -2,6 +2,10 @@ import * as z from "zod"
 
 import { replicate } from "@/lib/replicate"
 
+export const config = {
+  runtime: "edge",
+}
+
 const generateSchema = z.object({
   prompt: z.string(),
 })

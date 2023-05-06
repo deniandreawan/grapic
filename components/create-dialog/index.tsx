@@ -12,9 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { TypeOne } from "@/components/create-dialog/type-one"
-import { TypeThree } from "@/components/create-dialog/type-three"
-import { TypeTwo } from "@/components/create-dialog/type-two"
+import { TypeOne, TypeThree, TypeTwo } from "@/components/create-dialog/type"
 import { Icons } from "@/components/icons"
 
 interface CreateDialogProps {

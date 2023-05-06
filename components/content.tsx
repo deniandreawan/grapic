@@ -25,7 +25,7 @@ export function Content({
 }: ContentProps) {
   return (
     <CreateDialog slug={slug} title={title} description={descriptions}>
-      <Card className="cursor-pointer lg:duration-300 lg:hover:scale-105">
+      <Card className="cursor-pointer">
         <CardHeader className="space-y-4 p-4">
           <AspectRatio ratio={4 / 3} className="bg-muted">
             <Image
