@@ -38,13 +38,14 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String     @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    projects      Projects[]
 }
 
 model VerificationToken {
@@ -53,4 +54,19 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Projects {
+    id          String   @id @default(cuid())
+    projectId   String
+    userId      String
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    inputImage  String?
+    outputImage Json
+    prompt      String?
+    type        String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@unique([projectId, userId])
 }

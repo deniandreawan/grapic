@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 
+import { setRandomKey } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -28,6 +30,7 @@ export function CreateDialog({
   description,
   slug,
 }: CreateDialogProps) {
+  const router = useRouter()
   const [data, setData] = React.useState<{
     image: string | null
   }>({
@@ -47,20 +50,36 @@ export function CreateDialog({
   }, [data.image, prompt, saving, slug])
 
   const getFetch = React.useCallback(
-    async ({ api, input }: { api: string; input: object }) => {
+    async ({
+      api,
+      type,
+      input,
+    }: {
+      api: string
+      type: string
+      input: object
+    }) => {
+      const { key } = await setRandomKey()
       const response = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          key,
+          type,
           ...input,
         }),
       }).then(async (res) => {
         if (res.status === 200) {
-          const output = await res.json()
+          const data = await res.json()
 
-          console.log(output)
+          if (data) {
+            // This forces a cache invalidation.
+            router.refresh()
+
+            router.push(`/results/${key}`)
+          }
         } else {
           setSaving(false)
           alert("Something went wrong. Please try again later.")
@@ -69,7 +88,7 @@ export function CreateDialog({
 
       return response
     },
-    []
+    [router]
   )
 
   const onClose = React.useCallback(() => {
@@ -84,36 +103,35 @@ export function CreateDialog({
       case "text-to-image":
         await getFetch({
           api: "/api/generate/text-to-image",
+          type: "text-to-image",
           input: { prompt },
         })
         break
       case "image-to-image":
         await getFetch({
           api: "/api/generate/image-to-image",
-          input: { prompt, image: data.image },
-        })
-        break
-      case "image-variation":
-        await getFetch({
-          api: "/api/generate/image-variation",
-          input: { input_image: data.image },
+          type: "image-to-image",
+          input: { image: data.image, prompt },
         })
         break
       case "upscale-image":
         await getFetch({
           api: "/api/generate/upscale-image",
+          type: "upscale-image",
           input: { img: data.image },
         })
         break
       case "remove-background":
         await getFetch({
           api: "/api/generate/remove-background",
+          type: "remove-background",
           input: { image: data.image },
         })
         break
       case "colorize":
         await getFetch({
           api: "/api/generate/colorize",
+          type: "colorize",
           input: { image: data.image },
         })
         break
@@ -141,9 +159,6 @@ export function CreateDialog({
                 data={data}
                 setData={setData}
               />
-            )) ||
-            (slug === "image-variation" && (
-              <TypeThree data={data} setData={setData} />
             )) ||
             (slug === "upscale-image" && (
               <TypeThree data={data} setData={setData} />

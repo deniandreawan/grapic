@@ -12,6 +12,8 @@ export const env = createEnv({
         GOOGLE_CLIENT_SECRET: z.string().min(1),
         POSTGRES_PRISMA_URL: z.string().min(1),
         POSTGRES_URL_NON_POOLING: z.string().min(1),
+        NEXT_PUBLIC_CLOUDFLARE_WORKER: z.string().min(1),
+        CLOUDFLARE_WORKER_SECRET: z.string().min(1),
     },
     client: {
         NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -25,5 +27,7 @@ export const env = createEnv({
         POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
         POSTGRES_URL_NON_POOLING: process.env.POSTGRES_URL_NON_POOLING,
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        NEXT_PUBLIC_CLOUDFLARE_WORKER: process.env.NEXT_PUBLIC_CLOUDFLARE_WORKER,
+        CLOUDFLARE_WORKER_SECRET: process.env.CLOUDFLARE_WORKER_SECRET,
     },
 })

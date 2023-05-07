@@ -17,13 +17,6 @@ export const dataContent: DataContent[] = [
   },
   {
     thumbnail:
-      "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677771881/features/image_tyfmoo.jpg",
-    title: "Image Variation",
-    descriptions: "Generate new variations of an image with a single click",
-    slug: "image-variation",
-  },
-  {
-    thumbnail:
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677761771/features/out._jfawec.jpg",
     title: "Upscale Image",
     descriptions: "Automatically enhance image resolution",
