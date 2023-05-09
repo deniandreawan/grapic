@@ -2,7 +2,9 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { DataContent } from "@/types"
 
+import { EnumComponent } from "@/config/data-content"
 import { setRandomKey } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,22 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { TypeOne, TypeThree, TypeTwo } from "@/components/create-dialog/type"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { DropZone } from "@/components/drop-zone"
 import { Icons } from "@/components/icons"
 
-interface CreateDialogProps {
+interface CreateDialogProps extends DataContent {
   children: React.ReactNode
-  title: string
-  description: string
-  slug: string
 }
 
-export function CreateDialog({
-  children,
-  title,
-  description,
-  slug,
-}: CreateDialogProps) {
+export function CreateDialog(item: CreateDialogProps) {
   const router = useRouter()
   const [data, setData] = React.useState<{
     image: string | null
@@ -40,14 +36,14 @@ export function CreateDialog({
   const [saving, setSaving] = React.useState<boolean>(false)
 
   const saveDisabled = React.useMemo(() => {
-    if (slug === "text-to-image") {
+    if (item.slug === "text-to-image") {
       return !prompt || saving
-    } else if (slug === "image-to-image") {
+    } else if (item.slug === "image-to-image") {
       return !prompt || !data.image || saving
     } else {
       return !data.image || saving
     }
-  }, [data.image, prompt, saving, slug])
+  }, [data.image, prompt, saving, item.slug])
 
   const getFetch = React.useCallback(
     async ({
@@ -60,7 +56,7 @@ export function CreateDialog({
       input: object
     }) => {
       const { key } = await setRandomKey()
-      const response = await fetch(api, {
+      const data = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +82,7 @@ export function CreateDialog({
         }
       })
 
-      return response
+      return data
     },
     [router]
   )
@@ -99,76 +95,63 @@ export function CreateDialog({
   const onGenerate = React.useCallback(async () => {
     setSaving(true)
 
-    switch (slug) {
-      case "text-to-image":
+    switch (item.slug) {
+      case "upscale-image":
         await getFetch({
-          api: "/api/generate/text-to-image",
-          type: "text-to-image",
-          input: { prompt },
+          api: `/api/generate/${item.slug}`,
+          type: item.slug,
+          input: { img: data.image },
         })
         break
       case "image-to-image":
         await getFetch({
-          api: "/api/generate/image-to-image",
-          type: "image-to-image",
+          api: `/api/generate/${item.slug}`,
+          type: item.slug,
           input: { image: data.image, prompt },
         })
-        break
-      case "upscale-image":
+      case "text-to-image":
         await getFetch({
-          api: "/api/generate/upscale-image",
-          type: "upscale-image",
-          input: { img: data.image },
-        })
-        break
-      case "remove-background":
-        await getFetch({
-          api: "/api/generate/remove-background",
-          type: "remove-background",
-          input: { image: data.image },
-        })
-        break
-      case "colorize":
-        await getFetch({
-          api: "/api/generate/colorize",
-          type: "colorize",
-          input: { image: data.image },
+          api: `/api/generate/${item.slug}`,
+          type: item.slug,
+          input: { prompt },
         })
         break
       default:
+        await getFetch({
+          api: `/api/generate/${item.slug}`,
+          type: item.slug,
+          input: { image: data.image },
+        })
         break
     }
-  }, [data.image, getFetch, prompt, slug])
+  }, [data.image, getFetch, item.slug, prompt])
 
   return (
     <Dialog onOpenChange={onClose}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>{item.children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{item.title}</DialogTitle>
+          <DialogDescription>{item.descriptions}</DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          {(slug === "text-to-image" && (
-            <TypeOne prompt={prompt} setPrompt={setPrompt} />
-          )) ||
-            (slug === "image-to-image" && (
-              <TypeTwo
-                prompt={prompt}
-                setPrompt={setPrompt}
-                data={data}
-                setData={setData}
-              />
-            )) ||
-            (slug === "upscale-image" && (
-              <TypeThree data={data} setData={setData} />
-            )) ||
-            (slug === "remove-background" && (
-              <TypeThree data={data} setData={setData} />
-            )) ||
-            (slug === "colorize" && (
-              <TypeThree data={data} setData={setData} />
-            ))}
+        <div className="space-y-4 py-4">
+          {item.components.includes(EnumComponent.image) && (
+            <DropZone data={data} setData={setData} />
+          )}
+          {item.components.includes(EnumComponent.input) && (
+            <Input
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Type your prompt here"
+            />
+          )}
+          {item.components.includes(EnumComponent.textarea) && (
+            <Textarea
+              placeholder="Type your prompt here"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+            />
+          )}
         </div>
 
         <DialogFooter>

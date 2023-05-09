@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 
 import { sideBarConfig } from "@/config/side-bar"
+import { authOptions } from "@/lib/auth"
 import { getCurrentUser } from "@/lib/session"
 import { Sidebar } from "@/components/side-bar"
 import { SiteHeader } from "@/components/site-header"
@@ -15,7 +16,7 @@ export default async function DashboardLayout({
   const user = await getCurrentUser()
 
   if (!user) {
-    return notFound()
+    redirect(authOptions?.pages?.signIn || "/login")
   }
 
   return (

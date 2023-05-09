@@ -8,6 +8,7 @@ export interface DataContent {
   title: string
   descriptions: string
   slug: string
+  components: string[]
 }
 
 export type SidebarNavItem = {

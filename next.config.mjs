@@ -4,7 +4,7 @@ import "./env.mjs"
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["res.cloudinary.com"]
+    domains: ["res.cloudinary.com", "replicate.delivery"]
   },
   experimental: {
     appDir: true,

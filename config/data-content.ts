@@ -1,5 +1,11 @@
 import { DataContent } from "@/types"
 
+export enum EnumComponent {
+  textarea = "textarea",
+  input = "input",
+  image = "image",
+}
+
 export const dataContent: DataContent[] = [
   {
     thumbnail:
@@ -7,6 +13,7 @@ export const dataContent: DataContent[] = [
     title: "Text to Image",
     descriptions: "Generate original image with nothing but words",
     slug: "text-to-image",
+    components: [EnumComponent.textarea],
   },
   {
     thumbnail:
@@ -14,6 +21,7 @@ export const dataContent: DataContent[] = [
     title: "Image to Image",
     descriptions: "Transform any image with nothing but words",
     slug: "image-to-image",
+    components: [EnumComponent.image, EnumComponent.input],
   },
   {
     thumbnail:
@@ -21,6 +29,7 @@ export const dataContent: DataContent[] = [
     title: "Upscale Image",
     descriptions: "Automatically enhance image resolution",
     slug: "upscale-image",
+    components: [EnumComponent.image],
   },
   {
     thumbnail:
@@ -28,6 +37,7 @@ export const dataContent: DataContent[] = [
     title: "Remove Background",
     descriptions: "Automatically remove the background from image",
     slug: "remove-background",
+    components: [EnumComponent.image],
   },
   {
     thumbnail:
@@ -35,5 +45,6 @@ export const dataContent: DataContent[] = [
     title: "Colorize",
     descriptions: "Instanly colorize black and white image",
     slug: "colorize",
+    components: [EnumComponent.image],
   },
 ]
