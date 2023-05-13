@@ -1,84 +1,94 @@
+import Image from "next/image"
 import Link from "next/link"
 
-import { siteConfig } from "@/config/site"
+import { landingConfig } from "@/config/landing"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Icons } from "@/components/icons"
 
 export default async function IndexPage() {
   return (
-    <>
-      <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
-        <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center">
-          <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
-            Next Generation of Generative AI Tools
-          </h1>
-          <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-            Grapic is a new kind of creative suite. One where AI is anything you
-            can imagine can be created.
-          </p>
-          <div className="space-x-4">
-            <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
-              Get Started
-            </Link>
-            <Link
-              href={siteConfig.links.github}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
-            >
-              GitHub
-            </Link>
-          </div>
+    <div className="mb-40 space-y-40">
+      <div className="relative" id="home">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 grid grid-cols-2 -space-x-52 opacity-40 dark:opacity-20"
+        >
+          <div className="h-56 bg-gradient-to-br from-purple-500 to-purple-400 blur-[106px] dark:from-blue-700"></div>
+          <div className="h-32 bg-gradient-to-r from-cyan-400 to-sky-300 blur-[106px] dark:to-indigo-600"></div>
         </div>
-      </section>
-      <section
-        id="features"
-        className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24"
-      >
-        <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-          <h2 className="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
-            Features
-          </h2>
-          <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-            Browse our full suite of AI Magic Tools that make it easier than
-            ever to ideate, iterate and generate content.
-          </p>
-        </div>
-        <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
-          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-              <Icons.image className="h-8 w-8" />
-              <div className="space-y-2">
-                <h3 className="font-bold">Image</h3>
-                <p className="text-sm text-muted-foreground">
-                  AI system that can generate images
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-              <Icons.video className="h-8 w-8" />
-              <div className="space-y-2">
-                <h3 className="font-bold">Video</h3>
-                <p className="text-sm">AI system that can generate videos</p>
-              </div>
-            </div>
-          </div>
-          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-              <Icons.music className="h-8 w-8" />
-              <div className="space-y-2">
-                <h3 className="font-bold">Audio</h3>
-                <p className="text-sm text-muted-foreground">
-                  AI system that can generate audio
-                </p>
+        <div>
+          <div className="relative ml-auto pt-48">
+            <div className="mx-auto text-center lg:w-2/3">
+              <h1 className="font-heading text-4xl  md:text-6xl xl:text-7xl">
+                Make anything with{" "}
+                <span className="text-indigo-500">
+                  artificial intelligence.
+                </span>
+              </h1>
+              <p className="text-md mt-8 text-slate-500 dark:text-slate-300">
+                Grapic is a new kind of creative suite. One where AI is anything
+                you can imagine can be created. Looking forward, Grapic has the
+                potential to do much, much more.
+              </p>
+              <div className="mt-16 flex flex-wrap justify-center gap-x-6 gap-y-4">
+                <Link
+                  href="/dashboard"
+                  className={cn(
+                    buttonVariants({ size: "lg" }),
+                    "flex w-full bg-indigo-600 hover:bg-indigo-700 sm:w-max"
+                  )}
+                >
+                  <span className="relative text-base font-semibold text-white">
+                    Start for free
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+      <div id="features">
+        <div>
+          <div className="md:w-2/3 lg:w-1/2">
+            <Icons.star className="h-6 w-6 text-orange-400" />
+            <h2 className="my-8 font-heading text-2xl font-bold text-slate-700 dark:text-white md:text-4xl">
+              AI made for everyone.
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300">
+              Browse our full suite of AI Magic Tools that make it easier than
+              ever to ideas, iterate, and generate content.
+            </p>
+          </div>
+          <div className="mt-16 grid divide-x divide-y overflow-hidden rounded-3xl border  text-slate-600 dark:divide-slate-700 dark:border-slate-700 sm:grid-cols-2 lg:grid-cols-4 lg:divide-y-0 xl:grid-cols-4">
+            {landingConfig.features.map((item, index) => (
+              <div
+                key={index}
+                className="group relative bg-white transition last:bg-slate-50 hover:z-[1] hover:shadow-2xl hover:shadow-slate-600/10 dark:bg-slate-800 last:dark:bg-slate-900 last:dark:hover:bg-slate-800"
+              >
+                <div className="relative space-y-8 p-8 py-12">
+                  <Image
+                    src={item.icon}
+                    className="w-12"
+                    width="512"
+                    height="512"
+                    alt=""
+                  />
+
+                  <div className="space-y-2">
+                    <h5 className="font-heading text-xl text-slate-700 transition group-hover:text-indigo-500 dark:text-white">
+                      {item.title}
+                    </h5>
+                    <p className="text-slate-600 dark:text-slate-300">
+                      {item.descriptions}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -30,3 +30,13 @@ export type SidebarNavItem = {
 export type SidebarConfig = {
   sidebarNav: SidebarNavItem[]
 }
+
+export type FeaturesItem = {
+  icon: StaticImageData
+  title: string
+  descriptions: string
+}
+
+export type LandingConfig = {
+  features: FeaturesItem[]
+}

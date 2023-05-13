@@ -18,24 +18,21 @@ export default function LoginPage() {
         href="/register"
         className={cn(
           buttonVariants({ variant: "ghost", size: "sm" }),
-          "absolute right-4 top-4 md:right-8 md:top-8"
+          "absolute right-4 top-4 md:right-8 md:top-6"
         )}
       >
         Register
       </Link>
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+      <div className="relative hidden h-full flex-col bg-muted px-10 py-6 text-white dark:border-r lg:flex">
         <div
           className="absolute inset-0 bg-cover"
           style={{
             backgroundImage:
-              "url(https://images.unsplash.com/photo-1590069261209-f8e9b8642343?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1376&q=80)",
+              "url(https://images.unsplash.com/photo-1655721529468-d0d81b2dc489?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=928&q=80)",
           }}
         />
-        <Link
-          className="relative z-20 flex items-center text-lg font-bold"
-          href="/"
-        >
-          <Icons.logo className="mr-2 h-6 w-6" /> Grapic
+        <Link className="relative z-20 flex items-center font-bold" href="/">
+          <Icons.logo className="mr-2 h-8 w-8" /> Grapic
         </Link>
       </div>
       <div className="lg:p-8">
