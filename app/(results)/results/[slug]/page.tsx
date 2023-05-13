@@ -1,3 +1,4 @@
+import { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -13,6 +14,10 @@ interface ResultsPageProps {
   params: {
     slug: string
   }
+}
+
+export const metadata: Metadata = {
+  title: "Result",
 }
 
 export default async function ResultsPage({ params }: ResultsPageProps) {

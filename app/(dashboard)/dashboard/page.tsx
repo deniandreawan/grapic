@@ -1,6 +1,12 @@
+import { Metadata } from "next"
+
 import { dataContent } from "@/config/data-content"
 import { Content } from "@/components/content"
 import { Wrapper } from "@/components/wrapper"
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+}
 
 export default function DashboardPage() {
   return (
