@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server"
+import { env } from "@/env.mjs"
 import { getToken } from "next-auth/jwt"
 import { z } from "zod"
 
 import { generate } from "@/lib/generate"
 import { replicate } from "@/lib/replicate"
+import { setRandomKey } from "@/lib/upstash"
 
 export const config = {
   runtime: "edge",
@@ -20,7 +22,7 @@ const generateSchema = z.object({
 export default async function handler(req: NextRequest) {
   if (req.method === "POST") {
     try {
-      const url = req.url
+      const slug = req.nextUrl.pathname.split("/")[3]
       const session = await getToken({ req })
       if (!session?.email) {
         return new Response("Not Authenticated", { status: 403 })
@@ -29,25 +31,48 @@ export default async function handler(req: NextRequest) {
       const json = await req.json()
       const body = generateSchema.parse(json)
 
-      switch (url.split("=")[1]) {
+      switch (slug) {
         case `text-to-image`:
-          await generate({
-            output: await replicate.run(
-              "ai-forever/kandinsky-2:601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
-              {
-                input: {
-                  prompt: body.prompt,
-                  batch_size: 4,
-                },
-              }
-            ),
-            email: session.email,
-            key: body.key,
-            type: body.type,
-            prompt: body.prompt,
-          })
+          const { key } = await setRandomKey()
+          // await generate({
+          //   output: await replicate.predictions.create({
+          //     version:
+          //       "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
+          //     input: {
+          //       prompt: body.prompt,
+          //       batch_size: 4,
+          //     },
+          //     webhook: `http://localhost:3000/api/output/${key}`,
+          //     webhook_events_filter: ["completed"],
+          //   }),
+          //   email: session.email,
+          //   key: key,
+          //   type: body.type,
+          //   prompt: body.prompt,
+          // })
 
-          return new Response(JSON.stringify(body.key))
+          await Promise.allSettled([
+            replicate.predictions.create({
+              version:
+                "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
+              input: {
+                prompt: body.prompt,
+                batch_size: 4,
+              },
+              webhook: `${env.NEXT_PUBLIC_APP_URL}/api/webhook/${key}`,
+              webhook_events_filter: ["completed"],
+            }),
+          ]).then((results) =>
+            results.map((result) => {
+              if (result.status === "fulfilled") {
+                return result.value
+              } else {
+                return result.reason
+              }
+            })
+          )
+
+          return new Response(JSON.stringify({ key }))
         case "image-to-image":
           await generate({
             output: await replicate.run(
