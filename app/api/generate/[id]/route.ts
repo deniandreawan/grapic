@@ -39,13 +39,25 @@ export async function POST(
 
     const domain =
       process.env.NODE_ENV !== "production"
-        ? "https://ef15-36-68-53-99.ngrok-free.app"
+        ? "https://f5e0-36-68-53-99.ngrok-free.app"
         : env.NEXT_PUBLIC_APP_URL
-    let prediction
 
     switch (params.id) {
       case "text-to-image":
-        prediction = await replicate.predictions.create({
+        await db.projects.create({
+          data: {
+            user: {
+              connect: {
+                email: session.user.email!,
+              },
+            },
+            projectId: key,
+            type: params.id,
+            prompt: body.prompt,
+          },
+        })
+
+        await replicate.predictions.create({
           version:
             "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
           input: {
@@ -56,33 +68,9 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
-              },
-            },
-            projectId: key,
-            type: params.id,
-            prompt: body.prompt,
-          },
-        })
-
         return new Response(JSON.stringify({ key }))
 
       case "image-to-image":
-        prediction = await replicate.predictions.create({
-          version:
-            "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
-          input: {
-            prompt: body.prompt,
-            image: body.image,
-          },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
-          webhook_events_filter: ["completed"],
-        })
-
         await cloudflare({
           id: key,
           image: body.image!,
@@ -102,10 +90,43 @@ export async function POST(
           },
         })
 
+        await replicate.predictions.create({
+          version:
+            "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
+          input: {
+            prompt: body.prompt,
+            image: body.image,
+            scheduler: "K_EULER_ANCESTRAL",
+            guidance_scale: 10,
+            num_inference_steps: 50,
+            image_guidance_scale: 1,
+          },
+          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook_events_filter: ["completed"],
+        })
+
         return new Response(JSON.stringify({ key }))
 
       case "colorize":
-        prediction = await replicate.predictions.create({
+        await cloudflare({
+          id: key,
+          image: body.image!,
+        })
+
+        await db.projects.create({
+          data: {
+            user: {
+              connect: {
+                email: session.user.email!,
+              },
+            },
+            projectId: key,
+            type: params.id,
+            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
+          },
+        })
+
+        await replicate.predictions.create({
           version:
             "9451bfbf652b21a9bccc741e5c7046540faa5586cfa3aa45abc7dbb46151a4f7",
           input: {
@@ -115,6 +136,9 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
+        return new Response(JSON.stringify({ key }))
+
+      case "remove-background":
         await cloudflare({
           id: key,
           image: body.image!,
@@ -133,10 +157,7 @@ export async function POST(
           },
         })
 
-        return new Response(JSON.stringify({ key }))
-
-      case "remove-background":
-        prediction = await replicate.predictions.create({
+        await replicate.predictions.create({
           version:
             "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
           input: {
@@ -146,6 +167,9 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
+        return new Response(JSON.stringify({ key }))
+
+      case "upscale-image":
         await cloudflare({
           id: key,
           image: body.image!,
@@ -164,10 +188,7 @@ export async function POST(
           },
         })
 
-        return new Response(JSON.stringify({ key }))
-
-      case "upscale-image":
-        prediction = await replicate.predictions.create({
+        await replicate.predictions.create({
           version:
             "9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
           input: {
@@ -175,24 +196,6 @@ export async function POST(
           },
           webhook: `${domain}/api/webhooks/replicate/${key}`,
           webhook_events_filter: ["completed"],
-        })
-
-        await cloudflare({
-          id: key,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
-              },
-            },
-            projectId: key,
-            type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
-          },
         })
 
         return new Response(JSON.stringify({ key }))

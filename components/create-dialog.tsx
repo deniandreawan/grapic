@@ -45,22 +45,13 @@ export function CreateDialog(item: CreateDialogProps) {
   }, [data.image, prompt, saving, item.id])
 
   const getFetch = React.useCallback(
-    async ({
-      api,
-      type,
-      input,
-    }: {
-      api: string
-      type: string
-      input: object
-    }) => {
+    async ({ api, input }: { api: string; input: object }) => {
       const data = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type,
           ...input,
         }),
       }).then(async (res) => {
@@ -96,20 +87,17 @@ export function CreateDialog(item: CreateDialogProps) {
       case "image-to-image":
         await getFetch({
           api: `/api/generate/${item.id}`,
-          type: item.id,
-          input: { image: data.image, prompt },
+          input: { prompt, image: data.image },
         })
       case "text-to-image":
         await getFetch({
           api: `/api/generate/${item.id}`,
-          type: item.id,
           input: { prompt },
         })
         break
       default:
         await getFetch({
           api: `/api/generate/${item.id}`,
-          type: item.id,
           input: { image: data.image },
         })
         break

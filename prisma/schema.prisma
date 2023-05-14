@@ -58,8 +58,8 @@ model VerificationToken {
 
 model Projects {
     id        String   @id @default(cuid())
-    projectId String   @unique
-    userId    String   @unique
+    projectId String
+    userId    String
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     input     String?
     output    Json?
@@ -67,4 +67,6 @@ model Projects {
     type      String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    @@unique([userId, projectId])
 }

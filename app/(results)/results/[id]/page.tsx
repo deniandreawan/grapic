@@ -4,8 +4,10 @@ import { redirect } from "next/navigation"
 
 import { authOptions } from "@/lib/auth"
 import { getCurrentUser } from "@/lib/session"
+import { getData } from "@/lib/upstash"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { Gallery } from "@/components/gallery"
 import { Icons } from "@/components/icons"
 
 interface ResultsPageProps {
@@ -20,8 +22,9 @@ export const metadata: Metadata = {
 
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const user = await getCurrentUser()
+  const data = await getData(params.id)
 
-  if (!user) {
+  if (!user || !data) {
     redirect(authOptions?.pages?.signIn || "/login")
   }
 
@@ -39,6 +42,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           Back
         </>
       </Link>
+      <div>{data && <Gallery id={params.id} fallbackData={data} />}</div>
     </div>
   )
 }

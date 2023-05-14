@@ -75,10 +75,7 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Projects_projectId_key" ON "Projects"("projectId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Projects_userId_key" ON "Projects"("userId");
+CREATE UNIQUE INDEX "Projects_userId_projectId_key" ON "Projects"("userId", "projectId");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
