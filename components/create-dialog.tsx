@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { DataContent } from "@/types"
 
 import { EnumComponent } from "@/config/data-content"
-import { setRandomKey } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -36,14 +35,14 @@ export function CreateDialog(item: CreateDialogProps) {
   const [saving, setSaving] = React.useState<boolean>(false)
 
   const saveDisabled = React.useMemo(() => {
-    if (item.slug === "text-to-image") {
+    if (item.id === "text-to-image") {
       return !prompt || saving
-    } else if (item.slug === "image-to-image") {
+    } else if (item.id === "image-to-image") {
       return !prompt || !data.image || saving
     } else {
       return !data.image || saving
     }
-  }, [data.image, prompt, saving, item.slug])
+  }, [data.image, prompt, saving, item.id])
 
   const getFetch = React.useCallback(
     async ({
@@ -55,22 +54,20 @@ export function CreateDialog(item: CreateDialogProps) {
       type: string
       input: object
     }) => {
-      const { key } = await setRandomKey()
       const data = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          key,
           type,
           ...input,
         }),
       }).then(async (res) => {
         if (res.status === 200) {
-          const data = await res.json()
+          const { key } = await res.json()
 
-          if (data) {
+          if (key) {
             // This forces a cache invalidation.
             router.refresh()
 
@@ -95,36 +92,29 @@ export function CreateDialog(item: CreateDialogProps) {
   const onGenerate = React.useCallback(async () => {
     setSaving(true)
 
-    switch (item.slug) {
-      case "upscale-image":
-        await getFetch({
-          api: `/api/generate/${item.slug}`,
-          type: item.slug,
-          input: { img: data.image },
-        })
-        break
+    switch (item.id) {
       case "image-to-image":
         await getFetch({
-          api: `/api/generate/${item.slug}`,
-          type: item.slug,
+          api: `/api/generate/${item.id}`,
+          type: item.id,
           input: { image: data.image, prompt },
         })
       case "text-to-image":
         await getFetch({
-          api: `/api/generate/${item.slug}`,
-          type: item.slug,
+          api: `/api/generate/${item.id}`,
+          type: item.id,
           input: { prompt },
         })
         break
       default:
         await getFetch({
-          api: `/api/generate/${item.slug}`,
-          type: item.slug,
+          api: `/api/generate/${item.id}`,
+          type: item.id,
           input: { image: data.image },
         })
         break
     }
-  }, [data.image, getFetch, item.slug, prompt])
+  }, [data.image, getFetch, item.id, prompt])
 
   return (
     <Dialog onOpenChange={onClose}>

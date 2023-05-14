@@ -32,7 +32,7 @@ export default function RegisterPage() {
           }}
         />
         <Link className="relative z-20 flex items-center font-bold" href="/">
-          <Icons.logo className="mr-2 h-8 w-8" /> Grapic
+          <Icons.logo className="mr-2 h-10 w-10" /> Grapic
         </Link>
       </div>
       <div className="lg:p-8">

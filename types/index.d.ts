@@ -4,10 +4,10 @@ import type { Icon } from "lucide-react"
 import { Icons } from "@/components/icons"
 
 export interface DataContent {
+  id: string
   thumbnail: string
   title: string
   descriptions: string
-  slug: string
   components: string[]
 }
 

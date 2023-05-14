@@ -49,8 +49,8 @@ CREATE TABLE "Projects" (
     "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "inputImage" TEXT,
-    "outputImage" JSONB NOT NULL,
+    "input" TEXT,
+    "output" JSONB,
     "prompt" TEXT,
     "type" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -75,7 +75,10 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Projects_projectId_userId_key" ON "Projects"("projectId", "userId");
+CREATE UNIQUE INDEX "Projects_projectId_key" ON "Projects"("projectId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Projects_userId_key" ON "Projects"("userId");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

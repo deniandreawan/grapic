@@ -57,16 +57,14 @@ model VerificationToken {
 }
 
 model Projects {
-    id          String   @id @default(cuid())
-    projectId   String
-    userId      String
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    inputImage  String?
-    outputImage Json
-    prompt      String?
-    type        String
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-
-    @@unique([projectId, userId])
+    id        String   @id @default(cuid())
+    projectId String   @unique
+    userId    String   @unique
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    input     String?
+    output    Json?
+    prompt    String?
+    type      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }

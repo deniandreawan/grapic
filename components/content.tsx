@@ -19,7 +19,7 @@ export function Content(item: DataContent) {
             <Image
               priority
               src={item.thumbnail}
-              alt={item.slug}
+              alt={item.id}
               fill
               className="rounded-md object-cover"
             />
