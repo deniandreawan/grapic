@@ -3,8 +3,8 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
-import { getData } from "@/lib/upstash"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Gallery } from "@/components/gallery"
@@ -22,10 +22,24 @@ export const metadata: Metadata = {
 
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const user = await getCurrentUser()
-  const data = await getData(params.id)
 
-  if (!user || !data) {
+  if (!user) {
     redirect(authOptions?.pages?.signIn || "/login")
+  }
+
+  const data = await db.projects.findFirst({
+    where: {
+      projectId: params.id,
+      userId: user.id!,
+    },
+    select: {
+      projectId: true,
+      status: true,
+    },
+  })
+
+  if (!data) {
+    redirect("/dashboard")
   }
 
   return (
@@ -42,7 +56,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           Back
         </>
       </Link>
-      <div>{data && <Gallery id={params.id} fallbackData={data} />}</div>
+      {data && <Gallery id={data.projectId} status={data.status} />}
     </div>
   )
 }

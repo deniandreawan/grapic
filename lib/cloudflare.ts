@@ -6,7 +6,7 @@ interface CloudflareProps {
 }
 
 export async function cloudflare({ id, image }: CloudflareProps) {
-  await fetch(`${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${id}`, {
+  await fetch(`${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${id}`, {
     method: "PUT",
     headers: {
       "X-CF-Secret": env.CLOUDFLARE_WORKER_SECRET,

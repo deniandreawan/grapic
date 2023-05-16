@@ -2,39 +2,44 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import { StatusProjects } from "@prisma/client"
 import useSWR from "swr"
 
-import { DataProps } from "@/lib/upstash"
 import { fetcher } from "@/lib/utils"
 import { Icons } from "@/components/icons"
 
+interface DataProps {
+  projectId: string
+  status: StatusProjects
+  output: string[] | string | null
+}
+
 export function Gallery({
   id,
-  fallbackData,
+  status,
 }: {
   id: string
-  fallbackData: DataProps
+  status: StatusProjects
 }) {
-  const { data } = useSWR<DataProps>(`/api/generate/results/${id}`, fetcher, {
-    fallbackData,
-    refreshInterval: Boolean(fallbackData.output) ? 0 : 500,
+  const { data } = useSWR<DataProps>(`/api/results/${id}`, fetcher, {
+    refreshInterval: status !== "processing" ? 0 : 500,
     refreshWhenHidden: true,
   })
 
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (data?.output) {
+    if (data?.status === "succeeded" || data?.status === "failed") {
       setLoading(false)
     }
-  }, [data?.output])
+  }, [data?.status])
 
   return (
     <div>
-      {loading && !data?.output && (
+      {loading && status === "processing" && (
         <Icons.spinner className="h-8 w-8 animate-spin" />
       )}
-      {!loading && data?.output && (
+      {!loading && data?.output && data.status === "succeeded" && (
         <div>
           <Image
             src={typeof data.output === "string" ? data.output : data.output[0]}
@@ -46,7 +51,7 @@ export function Gallery({
           />
         </div>
       )}
-      {!loading && data?.failed && <p>Failed</p>}
+      {!loading && data?.status === "failed" && <p>Failed</p>}
     </div>
   )
 }

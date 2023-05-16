@@ -6,7 +6,6 @@ import { authOptions } from "@/lib/auth"
 import { cloudflare } from "@/lib/cloudflare"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
-import { setRandomKey } from "@/lib/upstash"
 
 const generateSchema = z.object({
   prompt: z.string().optional(),
@@ -35,62 +34,46 @@ export async function POST(
 
     const json = await req.json()
     const body = generateSchema.parse(json)
-    const { key } = await setRandomKey()
 
+    let prediction
     const domain =
       process.env.NODE_ENV !== "production"
-        ? "https://f5e0-36-68-53-99.ngrok-free.app"
+        ? "https://d937-36-68-53-99.ngrok-free.app"
         : env.NEXT_PUBLIC_APP_URL
 
     switch (params.id) {
       case "text-to-image":
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
-              },
-            },
-            projectId: key,
-            type: params.id,
-            prompt: body.prompt,
-          },
-        })
-
-        await replicate.predictions.create({
+        prediction = await replicate.predictions.create({
           version:
             "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
           input: {
             image: body.image,
             prompt: body.prompt,
           },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
           webhook_events_filter: ["completed"],
         })
 
-        return new Response(JSON.stringify({ key }))
+        if (prediction) {
+          await db.projects.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              status: "processing",
+              projectId: prediction.id,
+              type: params.id,
+              prompt: body.prompt,
+            },
+          })
+        }
+
+        return new Response(JSON.stringify({ id: prediction.id }))
 
       case "image-to-image":
-        await cloudflare({
-          id: key,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
-              },
-            },
-            projectId: key,
-            type: params.id,
-            prompt: body.prompt,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
-          },
-        })
-
-        await replicate.predictions.create({
+        prediction = await replicate.predictions.create({
           version:
             "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
           input: {
@@ -101,46 +84,47 @@ export async function POST(
             num_inference_steps: 50,
             image_guidance_scale: 1,
           },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
           webhook_events_filter: ["completed"],
         })
 
-        return new Response(JSON.stringify({ key }))
+        if (prediction) {
+          await cloudflare({
+            id: prediction.id,
+            image: body.image!,
+          })
+
+          await db.projects.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              status: "processing",
+              projectId: prediction.id,
+              type: params.id,
+              prompt: body.prompt,
+              input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+            },
+          })
+        }
+
+        return new Response(JSON.stringify({ id: prediction.id }))
 
       case "colorize":
-        await cloudflare({
-          id: key,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
-              },
-            },
-            projectId: key,
-            type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
-          },
-        })
-
-        await replicate.predictions.create({
+        prediction = await replicate.predictions.create({
           version:
             "9451bfbf652b21a9bccc741e5c7046540faa5586cfa3aa45abc7dbb46151a4f7",
           input: {
             image: body.image,
           },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
           webhook_events_filter: ["completed"],
         })
 
-        return new Response(JSON.stringify({ key }))
-
-      case "remove-background":
         await cloudflare({
-          id: key,
+          id: prediction.id,
           image: body.image!,
         })
 
@@ -151,27 +135,28 @@ export async function POST(
                 email: session.user.email!,
               },
             },
-            projectId: key,
+            status: "processing",
+            projectId: prediction.id,
             type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
+            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
           },
         })
 
-        await replicate.predictions.create({
+        return new Response(JSON.stringify({ id: prediction.id }))
+
+      case "remove-background":
+        prediction = await replicate.predictions.create({
           version:
             "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
           input: {
             image: body.image,
           },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
           webhook_events_filter: ["completed"],
         })
 
-        return new Response(JSON.stringify({ key }))
-
-      case "upscale-image":
         await cloudflare({
-          id: key,
+          id: prediction.id,
           image: body.image!,
         })
 
@@ -182,23 +167,47 @@ export async function POST(
                 email: session.user.email!,
               },
             },
-            projectId: key,
+            status: "processing",
+            projectId: prediction.id,
             type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/${key}`,
+            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
           },
         })
 
-        await replicate.predictions.create({
+        return new Response(JSON.stringify({ id: prediction.id }))
+
+      case "upscale-image":
+        prediction = await replicate.predictions.create({
           version:
             "9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
           input: {
             img: body.image,
           },
-          webhook: `${domain}/api/webhooks/replicate/${key}`,
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
           webhook_events_filter: ["completed"],
         })
 
-        return new Response(JSON.stringify({ key }))
+        await cloudflare({
+          id: prediction.id,
+          image: body.image!,
+        })
+
+        await db.projects.create({
+          data: {
+            user: {
+              connect: {
+                email: session.user.email!,
+              },
+            },
+            status: "processing",
+            projectId: prediction.id,
+            type: params.id,
+            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+          },
+        })
+
+        return new Response(JSON.stringify({ id: prediction.id }))
+
       default:
         return new Response(null, { status: 403 })
     }

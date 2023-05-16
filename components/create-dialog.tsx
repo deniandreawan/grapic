@@ -56,13 +56,13 @@ export function CreateDialog(item: CreateDialogProps) {
         }),
       }).then(async (res) => {
         if (res.status === 200) {
-          const { key } = await res.json()
+          const { id } = await res.json()
 
-          if (key) {
+          if (id) {
             // This forces a cache invalidation.
             router.refresh()
 
-            router.push(`/results/${key}`)
+            router.push(`/results/${id}`)
           }
         } else {
           setSaving(false)

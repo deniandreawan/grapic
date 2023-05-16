@@ -56,17 +56,24 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+enum StatusProjects {
+    processing
+    succeeded
+    failed
+}
+
 model Projects {
-    id        String   @id @default(cuid())
+    id        String         @id @default(cuid())
     projectId String
     userId    String
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
     input     String?
     output    Json?
     prompt    String?
     type      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    status    StatusProjects
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
 
     @@unique([userId, projectId])
 }
