@@ -14,8 +14,6 @@ export const env = createEnv({
         POSTGRES_URL_NON_POOLING: z.string().min(1),
         NEXT_PUBLIC_CLOUDFLARE_WORKER: z.string().min(1),
         CLOUDFLARE_WORKER_SECRET: z.string().min(1),
-        UPSTASH_REDIS_REST_URL: z.string().min(1),
-        UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     },
     client: {
         NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -31,7 +29,5 @@ export const env = createEnv({
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
         NEXT_PUBLIC_CLOUDFLARE_WORKER: process.env.NEXT_PUBLIC_CLOUDFLARE_WORKER,
         CLOUDFLARE_WORKER_SECRET: process.env.CLOUDFLARE_WORKER_SECRET,
-        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN
     },
 })
