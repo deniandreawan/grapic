@@ -10,17 +10,16 @@ import { columns } from "./columns"
 import { DataTable } from "./data-table"
 
 export const metadata = {
-  title: "Projects",
+  title: "Assets",
 }
 
 async function getData({ userId }: { userId: string }) {
-  const data = await db.projects.findMany({
+  const data = await db.assets.findMany({
     where: {
       userId,
-      status: "succeeded",
     },
     orderBy: {
-      updatedAt: "desc",
+      createdAt: "desc",
     },
   })
 
@@ -40,18 +39,20 @@ export default async function ProjectsPage() {
 
   const dataTable =
     data.map((item) => ({
-      id: item.projectId,
-      output: item.output,
+      id: item.assetId,
+      output: item.url,
       title: item.title,
-      updated: String(item.updatedAt),
+      created: String(item.createdAt),
+      media: item.media.charAt(0).toUpperCase() + item.media.slice(1),
+      type: item.type,
       creator: item.userId === user.id ? user.name : null,
     })) || []
 
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Projects"
-        text={`You have ${data.length || 0} projects`}
+        heading="Assets"
+        text={`You have ${data.length || 0} assets`}
       />
       <div className="grid gap-10">
         <DataTable columns={columns} data={dataTable} />

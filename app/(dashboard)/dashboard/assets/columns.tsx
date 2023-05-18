@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -18,14 +19,16 @@ export interface Project {
   id: string
   output: any
   title: string
-  updated: string
+  created: string
+  media: string
+  type: string
   creator: string | null | undefined
 }
 
 export const columns: ColumnDef<Project>[] = [
   {
     accessorKey: "title",
-    header: "Project Name",
+    header: "Name",
     cell: ({ row }) => {
       const data = row.original
       return (
@@ -48,15 +51,27 @@ export const columns: ColumnDef<Project>[] = [
     },
   },
   {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = String(row.getValue("type"))
+      return <Badge>{type}</Badge>
+    },
+  },
+  {
+    accessorKey: "media",
+    header: "Media",
+  },
+  {
     accessorKey: "creator",
     header: "Creator",
   },
   {
-    accessorKey: "updated",
-    header: "Updated",
+    accessorKey: "created",
+    header: "Created",
     cell: ({ row }) => {
-      const updated = String(row.getValue("updated"))
-      const date = new Date(updated)
+      const created = String(row.getValue("created"))
+      const date = new Date(created)
 
       const options: Intl.DateTimeFormatOptions = {
         day: "2-digit",
@@ -84,12 +99,6 @@ export const columns: ColumnDef<Project>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => router.push(`/results/${data.id}`)}
-            >
-              Open
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem>Rename</DropdownMenuItem>
             <DropdownMenuItem className="text-red-500">Delete</DropdownMenuItem>
           </DropdownMenuContent>

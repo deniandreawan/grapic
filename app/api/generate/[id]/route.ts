@@ -4,8 +4,10 @@ import { Prediction } from "replicate"
 import * as z from "zod"
 
 import { authOptions } from "@/lib/auth"
+import { cloudflare } from "@/lib/cloudflare"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
+import { setRandomKey } from "@/lib/utils"
 
 const generateSchema = z.object({
   prompt: z.string().optional(),
@@ -35,10 +37,12 @@ export async function POST(
     const json = await req.json()
     const body = generateSchema.parse(json)
 
+    const { key } = await setRandomKey()
+
     let prediction: Prediction
     const domain =
       process.env.NODE_ENV !== "production"
-        ? "https://2c22-36-68-55-61.ngrok-free.app"
+        ? "https://b98b-36-68-55-61.ngrok-free.app"
         : env.NEXT_PUBLIC_APP_URL
 
     switch (params.id) {
@@ -91,6 +95,26 @@ export async function POST(
         })
 
         if (prediction) {
+          await cloudflare({
+            id: prediction.id,
+            image: body.image!,
+          })
+
+          await db.assets.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              assetId: prediction.id,
+              title: key,
+              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+              media: "image",
+              type: "upload",
+            },
+          })
+
           await db.projects.create({
             data: {
               user: {
@@ -122,6 +146,26 @@ export async function POST(
         })
 
         if (prediction) {
+          await cloudflare({
+            id: prediction.id,
+            image: body.image!,
+          })
+
+          await db.assets.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              assetId: prediction.id,
+              title: key,
+              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+              media: "image",
+              type: "upload",
+            },
+          })
+
           await db.projects.create({
             data: {
               user: {
@@ -152,6 +196,26 @@ export async function POST(
         })
 
         if (prediction) {
+          await cloudflare({
+            id: prediction.id,
+            image: body.image!,
+          })
+
+          await db.assets.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              assetId: prediction.id,
+              title: key,
+              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+              media: "image",
+              type: "upload",
+            },
+          })
+
           await db.projects.create({
             data: {
               user: {
@@ -182,6 +246,26 @@ export async function POST(
         })
 
         if (prediction) {
+          await cloudflare({
+            id: prediction.id,
+            image: body.image!,
+          })
+
+          await db.assets.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              assetId: prediction.id,
+              title: key,
+              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+              media: "image",
+              type: "upload",
+            },
+          })
+
           await db.projects.create({
             data: {
               user: {

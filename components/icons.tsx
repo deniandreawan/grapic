@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   Clapperboard,
   CreditCard,
+  FileVideo,
   Folder,
   Image,
   Loader2,
@@ -38,6 +39,7 @@ export const Icons = {
   video: Clapperboard,
   music: Music,
   user: User,
+  filePlay: FileVideo,
   logo: (props: LucideProps) => (
     <svg
       viewBox="0 0 360 140"
