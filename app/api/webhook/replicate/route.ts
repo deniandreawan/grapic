@@ -31,12 +31,9 @@ export async function POST(req: NextRequest) {
         },
       })
     } else if (body.status === "failed") {
-      await db.projects.updateMany({
+      await db.projects.deleteMany({
         where: {
           projectId: body.id,
-        },
-        data: {
-          status: "failed",
         },
       })
     }

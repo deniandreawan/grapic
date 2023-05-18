@@ -7,6 +7,9 @@ dependencies:
   '@prisma/client':
     specifier: ^4.14.0
     version: 4.14.0(prisma@4.14.0)
+  '@radix-ui/react-alert-dialog':
+    specifier: ^1.0.3
+    version: 1.0.3(@types/react@18.0.22)(react-dom@18.2.0)(react@18.2.0)
   '@radix-ui/react-aspect-ratio':
     specifier: ^1.0.2
     version: 1.0.2(react-dom@18.2.0)(react@18.2.0)
@@ -25,6 +28,9 @@ dependencies:
   '@t3-oss/env-nextjs':
     specifier: ^0.2.2
     version: 0.2.2(zod@3.21.4)
+  '@tanstack/react-table':
+    specifier: ^8.9.1
+    version: 8.9.1(react-dom@18.2.0)(react@18.2.0)
   '@upstash/redis':
     specifier: ^1.20.6
     version: 1.20.6
@@ -581,6 +587,25 @@ packages:
       '@babel/runtime': 7.21.5
     dev: false
 
+  /@radix-ui/react-alert-dialog@1.0.3(@types/react@18.0.22)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-QXFy7+bhGi0u+paF2QbJeSCHZs4gLMJIPm6sajUamyW0fro6g1CaSGc5zmc4QmK2NlSGUrq8m+UsUqJYtzvXow==}
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0
+      react-dom: ^16.8 || ^17.0 || ^18.0
+    dependencies:
+      '@babel/runtime': 7.21.5
+      '@radix-ui/primitive': 1.0.0
+      '@radix-ui/react-compose-refs': 1.0.0(react@18.2.0)
+      '@radix-ui/react-context': 1.0.0(react@18.2.0)
+      '@radix-ui/react-dialog': 1.0.3(@types/react@18.0.22)(react-dom@18.2.0)(react@18.2.0)
+      '@radix-ui/react-primitive': 1.0.2(react-dom@18.2.0)(react@18.2.0)
+      '@radix-ui/react-slot': 1.0.1(react@18.2.0)
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    transitivePeerDependencies:
+      - '@types/react'
+    dev: false
+
   /@radix-ui/react-arrow@1.0.2(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-fqYwhhI9IarZ0ll2cUSfKuXHlJK0qE4AfnRrPBbRwEH/4mGQn04/QFGomLi8TXWIdv9WJk//KgGm+aDxVIr1wA==}
     peerDependencies:
@@ -1081,6 +1106,23 @@ packages:
     dependencies:
       '@t3-oss/env-core': 0.2.2(zod@3.21.4)
       zod: 3.21.4
+    dev: false
+
+  /@tanstack/react-table@8.9.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-yHs2m6lk5J5RNcu2dNtsDGux66wNXZjEgzxos6MRCX8gL+nqxeW3ZglqP6eANN0bGElPnjvqiUHGQvdACOr3Cw==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      '@tanstack/table-core': 8.9.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@tanstack/table-core@8.9.1:
+    resolution: {integrity: sha512-2+R83n8vMZND0q3W1lSiF7co9nFbeWbjAErFf27xwbeA9E0wtUu5ZDfgj+TZ6JzdAEQAgfxkk/QNFAKiS8E4MA==}
+    engines: {node: '>=12'}
     dev: false
 
   /@types/json5@0.0.29:

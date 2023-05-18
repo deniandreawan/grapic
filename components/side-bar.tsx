@@ -27,8 +27,10 @@ export function Sidebar({ items }: SidebarProps) {
             <Link key={index} href={item.disabled ? "/" : item.href}>
               <span
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  path === item.href ? "bg-accent" : "transparent",
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-100 hover:text-indigo-500 dark:hover:bg-accent dark:hover:text-accent-foreground",
+                  path === item.href
+                    ? "bg-indigo-100 text-indigo-500 dark:bg-accent dark:text-accent-foreground"
+                    : "transparent",
                   item.disabled && "cursor-not-allowed opacity-80"
                 )}
               >

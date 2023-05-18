@@ -1,9 +1,9 @@
 import { env } from "@/env.mjs"
 import { getServerSession } from "next-auth/next"
+import { Prediction } from "replicate"
 import * as z from "zod"
 
 import { authOptions } from "@/lib/auth"
-import { cloudflare } from "@/lib/cloudflare"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
 
@@ -35,10 +35,10 @@ export async function POST(
     const json = await req.json()
     const body = generateSchema.parse(json)
 
-    let prediction
+    let prediction: Prediction
     const domain =
       process.env.NODE_ENV !== "production"
-        ? "https://d937-36-68-53-99.ngrok-free.app"
+        ? "https://2c22-36-68-55-61.ngrok-free.app"
         : env.NEXT_PUBLIC_APP_URL
 
     switch (params.id) {
@@ -64,8 +64,10 @@ export async function POST(
               },
               status: "processing",
               projectId: prediction.id,
-              type: params.id,
+              type: "generate",
               prompt: body.prompt,
+              title: "Untitled",
+              media: "image",
             },
           })
         }
@@ -89,11 +91,6 @@ export async function POST(
         })
 
         if (prediction) {
-          await cloudflare({
-            id: prediction.id,
-            image: body.image!,
-          })
-
           await db.projects.create({
             data: {
               user: {
@@ -103,9 +100,10 @@ export async function POST(
               },
               status: "processing",
               projectId: prediction.id,
-              type: params.id,
+              type: "generate",
               prompt: body.prompt,
-              input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
+              title: "Untitled",
+              media: "image",
             },
           })
         }
@@ -123,24 +121,22 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
-        await cloudflare({
-          id: prediction.id,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
+        if (prediction) {
+          await db.projects.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
               },
+              status: "processing",
+              projectId: prediction.id,
+              type: "correction",
+              title: "Untitled",
+              media: "image",
             },
-            status: "processing",
-            projectId: prediction.id,
-            type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-          },
-        })
+          })
+        }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
@@ -155,24 +151,22 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
-        await cloudflare({
-          id: prediction.id,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
+        if (prediction) {
+          await db.projects.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
               },
+              status: "processing",
+              projectId: prediction.id,
+              type: "correction",
+              title: "Untitled",
+              media: "image",
             },
-            status: "processing",
-            projectId: prediction.id,
-            type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-          },
-        })
+          })
+        }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
@@ -187,24 +181,22 @@ export async function POST(
           webhook_events_filter: ["completed"],
         })
 
-        await cloudflare({
-          id: prediction.id,
-          image: body.image!,
-        })
-
-        await db.projects.create({
-          data: {
-            user: {
-              connect: {
-                email: session.user.email!,
+        if (prediction) {
+          await db.projects.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
               },
+              status: "processing",
+              projectId: prediction.id,
+              type: "correction",
+              title: "Untitled",
+              media: "image",
             },
-            status: "processing",
-            projectId: prediction.id,
-            type: params.id,
-            input: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-          },
-        })
+          })
+        }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 

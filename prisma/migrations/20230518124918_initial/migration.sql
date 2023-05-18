@@ -1,6 +1,15 @@
 -- CreateEnum
 CREATE TYPE "StatusProjects" AS ENUM ('processing', 'succeeded', 'failed');
 
+-- CreateEnum
+CREATE TYPE "Media" AS ENUM ('image', 'video', 'audio');
+
+-- CreateEnum
+CREATE TYPE "TypeProjects" AS ENUM ('generate', 'correction');
+
+-- CreateEnum
+CREATE TYPE "TypeAssets" AS ENUM ('export', 'upload');
+
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
@@ -52,15 +61,31 @@ CREATE TABLE "Projects" (
     "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "input" TEXT,
+    "title" TEXT NOT NULL,
     "output" JSONB,
     "prompt" TEXT,
-    "type" TEXT NOT NULL,
+    "type" "TypeProjects" NOT NULL,
+    "media" "Media" NOT NULL,
     "status" "StatusProjects" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Projects_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Assets" (
+    "id" TEXT NOT NULL,
+    "assetId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "type" "TypeAssets" NOT NULL,
+    "media" "Media" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Assets_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -81,6 +106,9 @@ CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationTok
 -- CreateIndex
 CREATE UNIQUE INDEX "Projects_userId_projectId_key" ON "Projects"("userId", "projectId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Assets_userId_assetId_key" ON "Assets"("userId", "assetId");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -89,3 +117,6 @@ ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Projects" ADD CONSTRAINT "Projects_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Assets" ADD CONSTRAINT "Assets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -46,6 +46,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     projects      Projects[]
+    assets        Assets[]
 }
 
 model VerificationToken {
@@ -56,24 +57,56 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+model Projects {
+    id        String         @id @default(cuid())
+    projectId String
+    userId    String
+    user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    title     String
+    output    Json?
+    prompt    String?
+    type      TypeProjects
+    media     Media
+    status    StatusProjects
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
+
+    @@unique([userId, projectId])
+}
+
+model Assets {
+    id        String     @id @default(cuid())
+    assetId   String
+    userId    String
+    user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    title     String
+    url       String
+    type      TypeAssets
+    media     Media
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+
+    @@unique([userId, assetId])
+}
+
 enum StatusProjects {
     processing
     succeeded
     failed
 }
 
-model Projects {
-    id        String         @id @default(cuid())
-    projectId String
-    userId    String
-    user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-    input     String?
-    output    Json?
-    prompt    String?
-    type      String
-    status    StatusProjects
-    createdAt DateTime       @default(now())
-    updatedAt DateTime       @updatedAt
+enum Media {
+    image
+    video
+    audio
+}
 
-    @@unique([userId, projectId])
+enum TypeProjects {
+    generate
+    correction
+}
+
+enum TypeAssets {
+    export
+    upload
 }
