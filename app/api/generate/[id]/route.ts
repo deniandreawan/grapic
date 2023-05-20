@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { Prediction } from "replicate"
 import * as z from "zod"
 
+import { ProjectId } from "@/config/data-content"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
@@ -36,7 +37,7 @@ export async function POST(
     let prediction: Prediction
 
     switch (params.id) {
-      case "text-to-image":
+      case ProjectId.textToImage:
         prediction = await replicate.predictions.create({
           version:
             "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
@@ -63,7 +64,7 @@ export async function POST(
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "image-instruction":
+      case ProjectId.imageInstruction:
         prediction = await replicate.predictions.create({
           version:
             "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
@@ -92,12 +93,13 @@ export async function POST(
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "colorize":
+      case ProjectId.colorize:
         prediction = await replicate.predictions.create({
           version:
-            "9451bfbf652b21a9bccc741e5c7046540faa5586cfa3aa45abc7dbb46151a4f7",
+            "0da600fab0c45a66211339f1c16b71345d22f26ef5fea3dca1bb90bb5711e950",
           input: {
-            image: body.image,
+            input_image: body.image,
+            model_name: "Artistic",
           },
         })
 
@@ -116,7 +118,7 @@ export async function POST(
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "remove-background":
+      case ProjectId.removeBackground:
         prediction = await replicate.predictions.create({
           version:
             "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
@@ -140,12 +142,40 @@ export async function POST(
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "super-resolution":
+      case ProjectId.superResolution:
         prediction = await replicate.predictions.create({
           version:
             "9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
           input: {
             img: body.image,
+          },
+        })
+
+        if (prediction) {
+          await db.predictions.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              id: prediction.id,
+            },
+          })
+        }
+
+        return new Response(JSON.stringify({ id: prediction.id }))
+
+      case ProjectId.reimagine:
+        prediction = await replicate.predictions.create({
+          version:
+            "aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
+          input: {
+            image: body.image,
+            prompt: body.prompt ? body.prompt : "",
+            a_prompt: "best quality, extremely detailed",
+            n_prompt:
+              "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
           },
         })
 

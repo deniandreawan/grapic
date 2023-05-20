@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { DataContent } from "@/types"
 
-import { EnumComponent } from "@/config/data-content"
+import { EnumComponent, ProjectId } from "@/config/data-content"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -35,9 +35,9 @@ export function CreateDialog(item: CreateDialogProps) {
   const [saving, setSaving] = React.useState<boolean>(false)
 
   const saveDisabled = React.useMemo(() => {
-    if (item.id === "text-to-image") {
+    if (item.id === ProjectId.textToImage) {
       return !prompt || saving
-    } else if (item.id === "image-instruction") {
+    } else if (item.id === ProjectId.imageInstruction) {
       return !prompt || !data.image || saving
     } else {
       return !data.image || saving
@@ -59,9 +59,6 @@ export function CreateDialog(item: CreateDialogProps) {
           const { id } = await res.json()
 
           if (id) {
-            // This forces a cache invalidation.
-            router.refresh()
-
             router.push(`/predictions/${id}`)
           }
         } else {
@@ -84,13 +81,20 @@ export function CreateDialog(item: CreateDialogProps) {
     setSaving(true)
 
     switch (item.id) {
-      case "image-instruction":
+      case ProjectId.imageInstruction:
         await getFetch({
           api: `/api/generate/${item.id}`,
           input: { prompt, image: data.image },
         })
         break
-      case "text-to-image":
+
+      case ProjectId.reimagine:
+        await getFetch({
+          api: `/api/generate/${item.id}`,
+          input: { prompt, image: data.image },
+        })
+        break
+      case ProjectId.textToImage:
         await getFetch({
           api: `/api/generate/${item.id}`,
           input: { prompt },

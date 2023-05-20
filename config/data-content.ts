@@ -6,13 +6,22 @@ export enum EnumComponent {
   image = "image",
 }
 
+export enum ProjectId {
+  textToImage = "text-to-image",
+  imageInstruction = "image-instruction",
+  superResolution = "super-resolution",
+  removeBackground = "remove-background",
+  colorize = "colorize",
+  reimagine = "reimagine",
+}
+
 export const dataContent: DataContent[] = [
   {
     thumbnail:
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677761973/features/text-to-image_pv7qcw.png",
     title: "Text to Image",
     descriptions: "Generate original image with nothing but words",
-    id: "text-to-image",
+    id: ProjectId.textToImage,
     components: [EnumComponent.textarea],
   },
   {
@@ -20,7 +29,7 @@ export const dataContent: DataContent[] = [
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677768551/features/image-intructions_qnubly.png",
     title: "Image Instruction",
     descriptions: "Edit your image with nothing but words",
-    id: "image-instruction",
+    id: ProjectId.imageInstruction,
     components: [EnumComponent.image, EnumComponent.input],
   },
   {
@@ -28,7 +37,7 @@ export const dataContent: DataContent[] = [
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677761771/features/out._jfawec.jpg",
     title: "Super Resolution",
     descriptions: "Automatically enhance image resolution",
-    id: "super-resolution",
+    id: ProjectId.superResolution,
     components: [EnumComponent.image],
   },
   {
@@ -36,7 +45,7 @@ export const dataContent: DataContent[] = [
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677763829/features/remove-bg_wsy00c.png",
     title: "Remove Background",
     descriptions: "Automatically remove the background from image",
-    id: "remove-background",
+    id: ProjectId.removeBackground,
     components: [EnumComponent.image],
   },
   {
@@ -44,7 +53,15 @@ export const dataContent: DataContent[] = [
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677767536/features/colorize_vsnl2z.jpg",
     title: "Colorize",
     descriptions: "Instanly colorize black and white image",
-    id: "colorize",
+    id: ProjectId.colorize,
     components: [EnumComponent.image],
+  },
+  {
+    thumbnail:
+      "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677771881/features/image_tyfmoo.jpg",
+    title: "Reimagine",
+    descriptions: "Generate new variations of an image with a single click",
+    id: ProjectId.reimagine,
+    components: [EnumComponent.image, EnumComponent.input],
   },
 ]

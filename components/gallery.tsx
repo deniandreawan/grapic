@@ -16,6 +16,8 @@ import { Icons } from "@/components/icons"
 interface PredictionProps extends Prediction {
   input: {
     img?: string
+    image?: string
+    input_image?: string
   }
 }
 
@@ -25,7 +27,15 @@ export function Gallery({ data }: { data: PredictionProps }) {
   const [isDownload, setIsDownload] = useState<boolean>(false)
   const router = useRouter()
 
-  const output = typeof data.output === "string" ? data.output : data.output[0]
+  const version =
+    "aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613"
+  const output =
+    typeof data.output === "string"
+      ? data.output
+      : version === data.version
+      ? data.output[1]
+      : data.output[0]
+
   const startIndex = output.indexOf("pbxt/") + 5
   const endIndex = output.indexOf("/out")
   const id = output.substring(startIndex, endIndex)
@@ -78,37 +88,30 @@ export function Gallery({ data }: { data: PredictionProps }) {
       )}
       {!loading && data?.output && data.status === "succeeded" && (
         <div className="relative">
-          {data.input.img ? (
+          {data.input.img || data.input.image || data.input.input_image ? (
             <ReactCompareSlider
               portrait={false}
               onlyHandleDraggable
               itemOne={
                 <ReactCompareSliderImage
-                  src={data.input.img}
+                  src={
+                    data.input.img || data.input.image || data.input.input_image
+                  }
                   alt="original photo"
                 />
               }
               itemTwo={
-                <ReactCompareSliderImage
-                  src={
-                    typeof data.output === "string"
-                      ? data.output
-                      : data.output[0]
-                  }
-                  alt="restored photo"
-                />
+                <ReactCompareSliderImage src={output} alt="restored photo" />
               }
-              className="flex h-auto w-[500px] rounded-xl object-cover"
+              className="flex h-full w-[500px] rounded-xl object-cover"
             />
           ) : (
             <Image
-              src={
-                typeof data.output === "string" ? data.output : data.output[0]
-              }
+              src={output}
               width="0"
               height="0"
               sizes="100vw"
-              className="flex h-auto w-[500px] rounded-xl object-cover"
+              className="flex h-full w-[500px] rounded-xl object-cover"
               alt={data.id}
             />
           )}
@@ -132,17 +135,12 @@ export function Gallery({ data }: { data: PredictionProps }) {
                   className="h-4 w-4 text-slate-600"
                   onClick={() => {
                     setIsDownload(true)
-                    fetch(
-                      typeof data.output === "string"
-                        ? data.output
-                        : data.output[0],
-                      {
-                        headers: new Headers({
-                          Origin: location.origin,
-                        }),
-                        mode: "cors",
-                      }
-                    )
+                    fetch(output, {
+                      headers: new Headers({
+                        Origin: location.origin,
+                      }),
+                      mode: "cors",
+                    })
                       .then((response) => response.blob())
                       .then((blob) => {
                         let blobUrl = window.URL.createObjectURL(blob)
