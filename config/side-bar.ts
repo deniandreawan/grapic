@@ -8,11 +8,6 @@ export const sideBarConfig: SidebarConfig = {
       icon: "magic",
     },
     {
-      title: "Projects",
-      href: "/dashboard/projects",
-      icon: "filePlay",
-    },
-    {
       title: "Assets",
       href: "/dashboard/assets",
       icon: "folder",

@@ -18,17 +18,17 @@ export const dataContent: DataContent[] = [
   {
     thumbnail:
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677768551/features/image-intructions_qnubly.png",
-    title: "Image to Image",
-    descriptions: "Transform any image with nothing but words",
-    id: "image-to-image",
+    title: "Image Instruction",
+    descriptions: "Edit your image with nothing but words",
+    id: "image-instruction",
     components: [EnumComponent.image, EnumComponent.input],
   },
   {
     thumbnail:
       "https://res.cloudinary.com/ddjwhuzyj/image/upload/v1677761771/features/out._jfawec.jpg",
-    title: "Upscale Image",
+    title: "Super Resolution",
     descriptions: "Automatically enhance image resolution",
-    id: "upscale-image",
+    id: "super-resolution",
     components: [EnumComponent.image],
   },
   {

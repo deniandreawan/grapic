@@ -5,13 +5,11 @@ import { useRouter } from "next/navigation"
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -21,7 +19,6 @@ export interface Project {
   title: string
   created: string
   media: string
-  type: string
   creator: string | null | undefined
 }
 
@@ -48,14 +45,6 @@ export const columns: ColumnDef<Project>[] = [
           {data.title && <span>{data.title}</span>}
         </div>
       )
-    },
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => {
-      const type = String(row.getValue("type"))
-      return <Badge>{type}</Badge>
     },
   },
   {

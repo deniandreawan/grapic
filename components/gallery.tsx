@@ -2,31 +2,33 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { StatusProjects } from "@prisma/client"
-import useSWR from "swr"
+import { useRouter } from "next/navigation"
+import {
+  ReactCompareSlider,
+  ReactCompareSliderImage,
+} from "react-compare-slider"
+import { Prediction } from "replicate"
 
-import { fetcher } from "@/lib/utils"
+import { forceDownload, getBase64FromUrl } from "@/lib/utils"
+import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
 
-interface DataProps {
-  projectId: string
-  status: StatusProjects
-  output: string[] | string | null
+interface PredictionProps extends Prediction {
+  input: {
+    img?: string
+  }
 }
 
-export function Gallery({
-  id,
-  status,
-}: {
-  id: string
-  status: StatusProjects
-}) {
-  const { data } = useSWR<DataProps>(`/api/results/${id}`, fetcher, {
-    refreshInterval: status !== "processing" ? 0 : 500,
-    refreshWhenHidden: true,
-  })
-
+export function Gallery({ data }: { data: PredictionProps }) {
   const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [isDownload, setIsDownload] = useState<boolean>(false)
+  const router = useRouter()
+
+  const output = typeof data.output === "string" ? data.output : data.output[0]
+  const startIndex = output.indexOf("pbxt/") + 5
+  const endIndex = output.indexOf("/out")
+  const id = output.substring(startIndex, endIndex)
 
   useEffect(() => {
     if (data?.status === "succeeded" || data?.status === "failed") {
@@ -34,21 +36,125 @@ export function Gallery({
     }
   }, [data?.status])
 
+  async function onSubmit() {
+    setIsSaving(true)
+
+    await getBase64FromUrl(output).then(async (base64) => {
+      const response = await fetch(`/api/project/${data.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "Untitled",
+          outputId: id,
+          output: base64,
+          media: "image",
+        }),
+      })
+
+      setIsSaving(false)
+
+      if (!response?.ok) {
+        return toast({
+          title: "Something went wrong.",
+          description: "Please try again.",
+          variant: "destructive",
+        })
+      }
+
+      toast({
+        description: "Success.",
+      })
+
+      router.refresh()
+    })
+  }
+
   return (
     <div>
-      {loading && status === "processing" && (
+      {loading && data.status === "processing" && (
         <Icons.spinner className="h-8 w-8 animate-spin" />
       )}
       {!loading && data?.output && data.status === "succeeded" && (
-        <div>
-          <Image
-            src={typeof data.output === "string" ? data.output : data.output[0]}
-            alt=""
-            className="rounded-lg object-cover"
-            width={400}
-            height={400}
-            priority
-          />
+        <div className="relative">
+          {data.input.img ? (
+            <ReactCompareSlider
+              portrait={false}
+              onlyHandleDraggable
+              itemOne={
+                <ReactCompareSliderImage
+                  src={data.input.img}
+                  alt="original photo"
+                />
+              }
+              itemTwo={
+                <ReactCompareSliderImage
+                  src={
+                    typeof data.output === "string"
+                      ? data.output
+                      : data.output[0]
+                  }
+                  alt="restored photo"
+                />
+              }
+              className="flex h-auto w-[500px] rounded-xl object-cover"
+            />
+          ) : (
+            <Image
+              src={
+                typeof data.output === "string" ? data.output : data.output[0]
+              }
+              width="0"
+              height="0"
+              sizes="100vw"
+              className="flex h-auto w-[500px] rounded-xl object-cover"
+              alt={data.id}
+            />
+          )}
+
+          <div className="absolute right-3 top-3 flex items-center justify-center space-x-2">
+            <button
+              onClick={onSubmit}
+              className="flex h-full w-full items-center justify-center rounded-full bg-slate-50/80 p-2 text-xl hover:cursor-pointer hover:bg-slate-50"
+            >
+              {isSaving ? (
+                <Icons.spinner className="h-4 w-4 animate-spin text-slate-600" />
+              ) : (
+                <Icons.folder className="h-4 w-4 text-slate-600" />
+              )}
+            </button>
+            <button className="flex h-full w-full items-center justify-center rounded-full bg-slate-50/80 p-2 text-xl hover:cursor-pointer hover:bg-slate-50">
+              {isDownload ? (
+                <Icons.spinner className="h-4 w-4 animate-spin text-slate-600" />
+              ) : (
+                <Icons.download
+                  className="h-4 w-4 text-slate-600"
+                  onClick={() => {
+                    setIsDownload(true)
+                    fetch(
+                      typeof data.output === "string"
+                        ? data.output
+                        : data.output[0],
+                      {
+                        headers: new Headers({
+                          Origin: location.origin,
+                        }),
+                        mode: "cors",
+                      }
+                    )
+                      .then((response) => response.blob())
+                      .then((blob) => {
+                        let blobUrl = window.URL.createObjectURL(blob)
+                        forceDownload(blobUrl, `output`)
+                        setIsDownload(false)
+                      })
+                      .catch((e) => console.error(e))
+                  }}
+                />
+              )}
+            </button>
+          </div>
         </div>
       )}
       {!loading && data?.status === "failed" && <p>Failed</p>}

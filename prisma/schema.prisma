@@ -38,14 +38,15 @@ model Session {
 }
 
 model User {
-    id            String     @id @default(cuid())
+    id            String        @id @default(cuid())
     name          String?
-    email         String?    @unique
+    email         String?       @unique
     emailVerified DateTime?
     image         String?
+    credits       Int           @default(5)
     accounts      Account[]
     sessions      Session[]
-    projects      Projects[]
+    predictions   Predictions[]
     assets        Assets[]
 }
 
@@ -57,56 +58,29 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-model Projects {
-    id        String         @id @default(cuid())
-    projectId String
-    userId    String
-    user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-    title     String
-    output    Json?
-    prompt    String?
-    type      TypeProjects
-    media     Media
-    status    StatusProjects
-    createdAt DateTime       @default(now())
-    updatedAt DateTime       @updatedAt
+model Predictions {
+    id     String
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([userId, projectId])
+    @@unique([id, userId])
 }
 
 model Assets {
-    id        String     @id @default(cuid())
-    assetId   String
+    id        String
     userId    String
-    user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     title     String
     url       String
-    type      TypeAssets
     media     Media
-    createdAt DateTime   @default(now())
-    updatedAt DateTime   @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-    @@unique([userId, assetId])
-}
-
-enum StatusProjects {
-    processing
-    succeeded
-    failed
+    @@unique([id, userId])
 }
 
 enum Media {
     image
     video
     audio
-}
-
-enum TypeProjects {
-    generate
-    correction
-}
-
-enum TypeAssets {
-    export
-    upload
 }

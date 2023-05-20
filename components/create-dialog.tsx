@@ -37,7 +37,7 @@ export function CreateDialog(item: CreateDialogProps) {
   const saveDisabled = React.useMemo(() => {
     if (item.id === "text-to-image") {
       return !prompt || saving
-    } else if (item.id === "image-to-image") {
+    } else if (item.id === "image-instruction") {
       return !prompt || !data.image || saving
     } else {
       return !data.image || saving
@@ -62,7 +62,7 @@ export function CreateDialog(item: CreateDialogProps) {
             // This forces a cache invalidation.
             router.refresh()
 
-            router.push(`/results/${id}`)
+            router.push(`/predictions/${id}`)
           }
         } else {
           setSaving(false)
@@ -84,11 +84,12 @@ export function CreateDialog(item: CreateDialogProps) {
     setSaving(true)
 
     switch (item.id) {
-      case "image-to-image":
+      case "image-instruction":
         await getFetch({
           api: `/api/generate/${item.id}`,
           input: { prompt, image: data.image },
         })
+        break
       case "text-to-image":
         await getFetch({
           api: `/api/generate/${item.id}`,

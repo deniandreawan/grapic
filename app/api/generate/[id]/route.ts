@@ -1,13 +1,10 @@
-import { env } from "@/env.mjs"
 import { getServerSession } from "next-auth/next"
 import { Prediction } from "replicate"
 import * as z from "zod"
 
 import { authOptions } from "@/lib/auth"
-import { cloudflare } from "@/lib/cloudflare"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
-import { setRandomKey } from "@/lib/utils"
 
 const generateSchema = z.object({
   prompt: z.string().optional(),
@@ -36,14 +33,7 @@ export async function POST(
 
     const json = await req.json()
     const body = generateSchema.parse(json)
-
-    const { key } = await setRandomKey()
-
     let prediction: Prediction
-    const domain =
-      process.env.NODE_ENV !== "production"
-        ? "https://b98b-36-68-55-61.ngrok-free.app"
-        : env.NEXT_PUBLIC_APP_URL
 
     switch (params.id) {
       case "text-to-image":
@@ -53,32 +43,27 @@ export async function POST(
           input: {
             image: body.image,
             prompt: body.prompt,
+            width: 768,
+            height: 768,
           },
-          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
-          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
-          await db.projects.create({
+          await db.predictions.create({
             data: {
               user: {
                 connect: {
                   email: session.user.email!,
                 },
               },
-              status: "processing",
-              projectId: prediction.id,
-              type: "generate",
-              prompt: body.prompt,
-              title: "Untitled",
-              media: "image",
+              id: prediction.id,
             },
           })
         }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "image-to-image":
+      case "image-instruction":
         prediction = await replicate.predictions.create({
           version:
             "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
@@ -90,44 +75,17 @@ export async function POST(
             num_inference_steps: 50,
             image_guidance_scale: 1,
           },
-          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
-          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
-          await cloudflare({
-            id: prediction.id,
-            image: body.image!,
-          })
-
-          await db.assets.create({
+          await db.predictions.create({
             data: {
               user: {
                 connect: {
                   email: session.user.email!,
                 },
               },
-              assetId: prediction.id,
-              title: key,
-              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-              media: "image",
-              type: "upload",
-            },
-          })
-
-          await db.projects.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              status: "processing",
-              projectId: prediction.id,
-              type: "generate",
-              prompt: body.prompt,
-              title: "Untitled",
-              media: "image",
+              id: prediction.id,
             },
           })
         }
@@ -141,43 +99,17 @@ export async function POST(
           input: {
             image: body.image,
           },
-          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
-          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
-          await cloudflare({
-            id: prediction.id,
-            image: body.image!,
-          })
-
-          await db.assets.create({
+          await db.predictions.create({
             data: {
               user: {
                 connect: {
                   email: session.user.email!,
                 },
               },
-              assetId: prediction.id,
-              title: key,
-              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-              media: "image",
-              type: "upload",
-            },
-          })
-
-          await db.projects.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              status: "processing",
-              projectId: prediction.id,
-              type: "correction",
-              title: "Untitled",
-              media: "image",
+              id: prediction.id,
             },
           })
         }
@@ -191,93 +123,41 @@ export async function POST(
           input: {
             image: body.image,
           },
-          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
-          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
-          await cloudflare({
-            id: prediction.id,
-            image: body.image!,
-          })
-
-          await db.assets.create({
+          await db.predictions.create({
             data: {
               user: {
                 connect: {
                   email: session.user.email!,
                 },
               },
-              assetId: prediction.id,
-              title: key,
-              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-              media: "image",
-              type: "upload",
-            },
-          })
-
-          await db.projects.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              status: "processing",
-              projectId: prediction.id,
-              type: "correction",
-              title: "Untitled",
-              media: "image",
+              id: prediction.id,
             },
           })
         }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case "upscale-image":
+      case "super-resolution":
         prediction = await replicate.predictions.create({
           version:
             "9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
           input: {
             img: body.image,
           },
-          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
-          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
-          await cloudflare({
-            id: prediction.id,
-            image: body.image!,
-          })
-
-          await db.assets.create({
+          await db.predictions.create({
             data: {
               user: {
                 connect: {
                   email: session.user.email!,
                 },
               },
-              assetId: prediction.id,
-              title: key,
-              url: `${env.NEXT_PUBLIC_CLOUDFLARE_WORKER}/assets/${prediction.id}`,
-              media: "image",
-              type: "upload",
-            },
-          })
-
-          await db.projects.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              status: "processing",
-              projectId: prediction.id,
-              type: "correction",
-              title: "Untitled",
-              media: "image",
+              id: prediction.id,
             },
           })
         }

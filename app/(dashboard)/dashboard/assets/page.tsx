@@ -39,12 +39,11 @@ export default async function ProjectsPage() {
 
   const dataTable =
     data.map((item) => ({
-      id: item.assetId,
+      id: item.id,
       output: item.url,
       title: item.title,
       created: String(item.createdAt),
       media: item.media.charAt(0).toUpperCase() + item.media.slice(1),
-      type: item.type,
       creator: item.userId === user.id ? user.name : null,
     })) || []
 

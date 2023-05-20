@@ -1,14 +1,5 @@
 -- CreateEnum
-CREATE TYPE "StatusProjects" AS ENUM ('processing', 'succeeded', 'failed');
-
--- CreateEnum
 CREATE TYPE "Media" AS ENUM ('image', 'video', 'audio');
-
--- CreateEnum
-CREATE TYPE "TypeProjects" AS ENUM ('generate', 'correction');
-
--- CreateEnum
-CREATE TYPE "TypeAssets" AS ENUM ('export', 'upload');
 
 -- CreateTable
 CREATE TABLE "Account" (
@@ -45,6 +36,7 @@ CREATE TABLE "User" (
     "email" TEXT,
     "emailVerified" TIMESTAMP(3),
     "image" TEXT,
+    "credits" INTEGER NOT NULL DEFAULT 5,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -57,35 +49,20 @@ CREATE TABLE "VerificationToken" (
 );
 
 -- CreateTable
-CREATE TABLE "Projects" (
+CREATE TABLE "Predictions" (
     "id" TEXT NOT NULL,
-    "projectId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "output" JSONB,
-    "prompt" TEXT,
-    "type" "TypeProjects" NOT NULL,
-    "media" "Media" NOT NULL,
-    "status" "StatusProjects" NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Projects_pkey" PRIMARY KEY ("id")
+    "userId" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "Assets" (
     "id" TEXT NOT NULL,
-    "assetId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "url" TEXT NOT NULL,
-    "type" "TypeAssets" NOT NULL,
     "media" "Media" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Assets_pkey" PRIMARY KEY ("id")
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateIndex
@@ -104,10 +81,10 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Projects_userId_projectId_key" ON "Projects"("userId", "projectId");
+CREATE UNIQUE INDEX "Predictions_id_userId_key" ON "Predictions"("id", "userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Assets_userId_assetId_key" ON "Assets"("userId", "assetId");
+CREATE UNIQUE INDEX "Assets_id_userId_key" ON "Assets"("id", "userId");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -116,7 +93,7 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Projects" ADD CONSTRAINT "Projects_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Predictions" ADD CONSTRAINT "Predictions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Assets" ADD CONSTRAINT "Assets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
