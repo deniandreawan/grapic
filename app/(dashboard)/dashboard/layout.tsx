@@ -2,12 +2,24 @@ import { redirect } from "next/navigation"
 
 import { sideBarConfig } from "@/config/side-bar"
 import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 import { Sidebar } from "@/components/side-bar"
 import { SiteHeader } from "@/components/site-header"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+}
+
+async function getData(id: string) {
+  return await db.user.findFirst({
+    where: {
+      id: id!,
+    },
+    select: {
+      credits: true,
+    },
+  })
 }
 
 export default async function DashboardLayout({
@@ -19,9 +31,12 @@ export default async function DashboardLayout({
     redirect(authOptions?.pages?.signIn || "/login")
   }
 
+  const data = await getData(user.id)
+
   return (
     <div className="flex min-h-screen flex-col space-y-6">
       <SiteHeader
+        credits={data?.credits || 0}
         user={{
           name: user.name,
           image: user.image,

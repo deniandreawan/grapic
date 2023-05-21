@@ -1,8 +1,9 @@
+import { env } from "@/env.mjs"
 import { getServerSession } from "next-auth/next"
 import { Prediction } from "replicate"
 import * as z from "zod"
 
-import { ProjectId } from "@/config/data-content"
+import { PredictionId, PredictionVersion } from "@/config/data-content"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { replicate } from "@/lib/replicate"
@@ -22,31 +23,65 @@ export async function POST(
   req: Request,
   context: z.infer<typeof routeContextSchema>
 ) {
+  // Validate the route params.
+  const { params } = routeContextSchema.parse(context)
+
+  // Ensure user is authentication and has access to this user.
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return new Response(null, { status: 403 })
+  }
+
   try {
-    // Validate the route params.
-    const { params } = routeContextSchema.parse(context)
-
-    // Ensure user is authentication and has access to this user.
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return new Response(null, { status: 403 })
-    }
-
     const json = await req.json()
     const body = generateSchema.parse(json)
     let prediction: Prediction
+    const domain: string =
+      process.env.NODE_ENV !== "production"
+        ? "https://bd8d-36-68-55-61.ngrok-free.app"
+        : env.NEXT_PUBLIC_APP_URL
+
+    // Get user from DB
+    const user = await db.user.findUnique({
+      where: {
+        email: session.user.email!,
+      },
+      select: {
+        credits: true,
+      },
+    })
+
+    // Check if user has any credits left
+    if (user?.credits === 0) {
+      return new Response(JSON.stringify("You have no generations left"), {
+        status: 400,
+      })
+    }
+
+    // If they have credits, decrease their credits by one and continue
+    await db.user.update({
+      where: {
+        email: session.user.email!,
+      },
+      data: {
+        credits: {
+          decrement: 1,
+        },
+      },
+    })
 
     switch (params.id) {
-      case ProjectId.textToImage:
+      case PredictionId.textToImage:
         prediction = await replicate.predictions.create({
-          version:
-            "601eea49d49003e6ea75a11527209c4f510a93e2112c969d548fbb45b9c4f19f",
+          version: PredictionVersion.textToImage,
           input: {
             image: body.image,
             prompt: body.prompt,
             width: 768,
             height: 768,
           },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
@@ -58,16 +93,18 @@ export async function POST(
                 },
               },
               id: prediction.id,
+              type: PredictionId.textToImage,
+              version: PredictionVersion.textToImage,
+              media: "image",
             },
           })
         }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case ProjectId.imageInstruction:
+      case PredictionId.imageInstruction:
         prediction = await replicate.predictions.create({
-          version:
-            "30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
+          version: PredictionVersion.imageInstruction,
           input: {
             prompt: body.prompt,
             image: body.image,
@@ -76,6 +113,8 @@ export async function POST(
             num_inference_steps: 50,
             image_guidance_scale: 1,
           },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
@@ -87,20 +126,80 @@ export async function POST(
                 },
               },
               id: prediction.id,
+              type: PredictionId.imageInstruction,
+              version: PredictionVersion.imageInstruction,
+              media: "image",
             },
           })
         }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case ProjectId.colorize:
+      case PredictionId.superResolution:
         prediction = await replicate.predictions.create({
-          version:
-            "0da600fab0c45a66211339f1c16b71345d22f26ef5fea3dca1bb90bb5711e950",
+          version: PredictionVersion.superResolution,
+          input: {
+            img: body.image,
+          },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
+        })
+
+        if (prediction) {
+          await db.predictions.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              id: prediction.id,
+              type: PredictionId.superResolution,
+              version: PredictionVersion.superResolution,
+              media: "image",
+            },
+          })
+        }
+
+        return new Response(JSON.stringify({ id: prediction.id }))
+
+      case PredictionId.removeBackground:
+        prediction = await replicate.predictions.create({
+          version: PredictionVersion.removeBackground,
+          input: {
+            image: body.image,
+          },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
+        })
+
+        if (prediction) {
+          await db.predictions.create({
+            data: {
+              user: {
+                connect: {
+                  email: session.user.email!,
+                },
+              },
+              id: prediction.id,
+              type: PredictionId.removeBackground,
+              version: PredictionVersion.removeBackground,
+              media: "image",
+            },
+          })
+        }
+
+        return new Response(JSON.stringify({ id: prediction.id }))
+
+      case PredictionId.colorize:
+        prediction = await replicate.predictions.create({
+          version: PredictionVersion.colorize,
           input: {
             input_image: body.image,
             model_name: "Artistic",
           },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
@@ -112,64 +211,18 @@ export async function POST(
                 },
               },
               id: prediction.id,
+              type: PredictionId.colorize,
+              version: PredictionVersion.colorize,
+              media: "image",
             },
           })
         }
 
         return new Response(JSON.stringify({ id: prediction.id }))
 
-      case ProjectId.removeBackground:
+      case PredictionId.reimagine:
         prediction = await replicate.predictions.create({
-          version:
-            "fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
-          input: {
-            image: body.image,
-          },
-        })
-
-        if (prediction) {
-          await db.predictions.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              id: prediction.id,
-            },
-          })
-        }
-
-        return new Response(JSON.stringify({ id: prediction.id }))
-
-      case ProjectId.superResolution:
-        prediction = await replicate.predictions.create({
-          version:
-            "9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
-          input: {
-            img: body.image,
-          },
-        })
-
-        if (prediction) {
-          await db.predictions.create({
-            data: {
-              user: {
-                connect: {
-                  email: session.user.email!,
-                },
-              },
-              id: prediction.id,
-            },
-          })
-        }
-
-        return new Response(JSON.stringify({ id: prediction.id }))
-
-      case ProjectId.reimagine:
-        prediction = await replicate.predictions.create({
-          version:
-            "aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
+          version: PredictionVersion.reimagine,
           input: {
             image: body.image,
             prompt: body.prompt ? body.prompt : "",
@@ -177,6 +230,8 @@ export async function POST(
             n_prompt:
               "longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality",
           },
+          webhook: `${domain}/api/webhook/replicate?token=${env.NEXTAUTH_SECRET}`,
+          webhook_events_filter: ["completed"],
         })
 
         if (prediction) {
@@ -188,6 +243,9 @@ export async function POST(
                 },
               },
               id: prediction.id,
+              type: PredictionId.reimagine,
+              version: PredictionVersion.reimagine,
+              media: "image",
             },
           })
         }
@@ -201,6 +259,18 @@ export async function POST(
     if (error instanceof z.ZodError) {
       return new Response(JSON.stringify(error.issues), { status: 422 })
     }
+
+    // Increment their credit if something went wrong
+    await db.user.update({
+      where: {
+        email: session.user.email!,
+      },
+      data: {
+        credits: {
+          increment: 1,
+        },
+      },
+    })
 
     return new Response(null, { status: 500 })
   }

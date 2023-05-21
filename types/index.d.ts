@@ -1,4 +1,4 @@
-import { User } from "@prisma/client"
+import { User, type Predictions } from "@prisma/client"
 import type { Icon } from "lucide-react"
 
 import { Icons } from "@/components/icons"
@@ -8,6 +8,7 @@ export interface DataContent {
   thumbnail: string
   title: string
   descriptions: string
+  version: string
   components: string[]
 }
 
@@ -39,4 +40,13 @@ export type FeaturesItem = {
 
 export type LandingConfig = {
   features: FeaturesItem[]
+}
+
+interface PredictionProps extends Predictions {
+  output: string[] | string
+  input: {
+    img?: string
+    image?: string
+    input_image?: string
+  }
 }

@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "Media" AS ENUM ('image', 'video', 'audio');
 
+-- CreateEnum
+CREATE TYPE "Status" AS ENUM ('succeeded', 'processing', 'failed');
+
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
@@ -51,7 +54,14 @@ CREATE TABLE "VerificationToken" (
 -- CreateTable
 CREATE TABLE "Predictions" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL
+    "userId" TEXT NOT NULL,
+    "status" "Status" NOT NULL DEFAULT 'processing',
+    "media" "Media" NOT NULL,
+    "type" TEXT NOT NULL,
+    "version" TEXT NOT NULL,
+    "output" JSONB,
+    "input" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable

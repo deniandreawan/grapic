@@ -1,10 +1,10 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { PredictionProps } from "@/types"
 
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { replicate } from "@/lib/replicate"
 import { getCurrentUser } from "@/lib/session"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -22,34 +22,31 @@ export const metadata: Metadata = {
 }
 
 async function getData({ id, userId }: { id: string; userId: string }) {
-  const data = await replicate.predictions.get(id)
-  const prediction = await replicate.wait(data, {
-    interval: 10,
-  })
-  const userPrediction = await db.predictions.findFirst({
+  const prediction = (await db.predictions.findFirst({
     where: {
-      id: id!,
-      userId: userId!,
+      id,
+      userId,
     },
-  })
+  })) as PredictionProps
 
-  return { prediction, userPrediction }
+  return { prediction }
 }
 
 export default async function PredictionsPage({
   params,
 }: PredictionsPageProps) {
   const user = await getCurrentUser()
-  const { prediction, userPrediction } = await getData({
+
+  if (!user) {
+    redirect(authOptions?.pages?.signIn || "/login")
+  }
+
+  const { prediction } = await getData({
     id: params.id,
     userId: user?.id!,
   })
 
-  if (!user || !userPrediction) {
-    redirect(authOptions?.pages?.signIn || "/login")
-  }
-
-  if (!prediction.output) {
+  if (!prediction) {
     redirect("/dashboard")
   }
 
@@ -67,7 +64,7 @@ export default async function PredictionsPage({
           Back
         </>
       </Link>
-      {prediction && <Gallery data={prediction} />}
+      {prediction && <Gallery prediction={prediction} />}
     </div>
   )
 }

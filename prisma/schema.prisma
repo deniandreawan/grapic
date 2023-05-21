@@ -59,9 +59,16 @@ model VerificationToken {
 }
 
 model Predictions {
-    id     String
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id        String
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    status    Status   @default(processing)
+    media     Media
+    type      String
+    version   String
+    output    Json?
+    input     Json?
+    createdAt DateTime @default(now())
 
     @@unique([id, userId])
 }
@@ -83,4 +90,10 @@ enum Media {
     image
     video
     audio
+}
+
+enum Status {
+    succeeded
+    processing
+    failed
 }
